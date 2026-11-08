@@ -45,4 +45,41 @@ namespace RaceDay.Web.DTOs
         public List<EventDto> UpcomingEvents { get; set; } = new();
         public List<EventDto> AllEvents { get; set; } = new();
     }
+
+    public class CategoryDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal MinAge { get; set; }
+        public decimal MaxAge { get; set; }
+        public decimal Price { get; set; }
+        public int EventId { get; set; }
+    }
+
+    public class CreateCategoryDto
+    {
+        [Required(ErrorMessage = "Category name is required.")]
+        public string Name { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+        public decimal MinAge { get; set; } = 0;
+        public decimal MaxAge { get; set; } = 120;
+
+        [Required(ErrorMessage = "Price is required.")]
+        [Range(0, 10000, ErrorMessage = "Price must be a valid amount.")]
+        public decimal Price { get; set; }
+
+        public int EventId { get; set; }
+    }
+
+    public class EventEnrolmentDto
+    {
+        public int EnrolmentId { get; set; }
+        public string ParticipantName { get; set; } = string.Empty;
+        public string ParticipantEmail { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
+        public DateTime EnrolmentDate { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
 }

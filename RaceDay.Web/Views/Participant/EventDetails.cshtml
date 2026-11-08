@@ -1,0 +1,63 @@
+@model RaceDay.Web.DTOs.EventDto
+
+@{
+    ViewData["Title"] = Model.Name;
+    var categories = ViewBag.Categories as List<RaceDay.Web.DTOs.CategoryDto> ?? new();
+}
+
+<div class="row justify-content-center mt-3">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white py-3">
+                <h3 class="mb-0 fw-bold">@Model.Name</h3>
+            </div>
+            <div class="card-body p-4">
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                }
+
+                <p class="lead text-secondary">@Model.Description</p>
+                <hr />
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>📅 Date:</strong> @Model.Date.ToString("yyyy-MM-dd HH:mm")</p>
+                        <p><strong>📍 Location:</strong> @Model.Location</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>🏁 Distance:</strong> @Model.Distance km</p>
+                        <p><strong>🏷️ Type:</strong> @Model.EventType</p>
+                    </div>
+                </div>
+
+                <h4 class="fw-bold mb-3">Select Category to Enrol</h4>
+                @if (!categories.Any())
+                {
+                    <div class="alert alert-warning">No pricing categories have been added for this event yet.</div>
+                }
+                else
+                {
+                    <div class="list-group mb-4">
+                        @foreach (var cat in categories)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <div>
+                                    <h5 class="mb-1 fw-bold text-dark">@cat.Name</h5>
+                                    <p class="mb-1 text-muted small">@cat.Description</p>
+                                    <span class="badge bg-success">Price: R @cat.Price</span>
+                                </div>
+                                <form asp-action="Enrol" method="post">
+                                    <input type="hidden" name="categoryId" value="@cat.Id" />
+                                    <input type="hidden" name="eventId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-primary btn-sm fw-semibold px-4">Enrol Now</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <a asp-action="BrowseEvents" class="btn btn-outline-secondary">&larr; Back to Events</a>
+            </div>
+        </div>
+    </div>
+</div>

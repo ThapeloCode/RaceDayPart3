@@ -1,0 +1,141 @@
+@model RaceDay.Web.DTOs.CreateCategoryDto
+
+@{
+    ViewData["Title"] = "Manage Event";
+    var categories = ViewBag.Categories as List<RaceDay.Web.DTOs.CategoryDto> ?? new();
+    var enrolments = ViewBag.Enrolments as List<RaceDay.Web.DTOs.EventEnrolmentDto> ?? new();
+    var eventId = ViewBag.EventId;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Event Management Portal</h2>
+        <p class="text-muted mb-0">Manage pricing categories and view participant sign-ups.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Left Column: Categories Management -->
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0 fw-bold">Add Event Category</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddCategory" method="post">
+                    <input type="hidden" asp-for="EventId" value="@eventId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Category Name</label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g. 10km Open / VIP" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <input asp-for="Description" class="form-control" placeholder="Brief description..." />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Price" class="form-label">Price (R)</label>
+                            <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MaxAge" class="form-label">Max Age</label>
+                            <input asp-for="MaxAge" class="form-control" type="number" />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100 fw-semibold">+ Add Category</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-secondary text-white py-3">
+                <h5 class="mb-0 fw-bold">Active Categories (@categories.Count)</h5>
+            </div>
+            <div class="card-body p-0">
+                @if (!categories.Any())
+                {
+                    <p class="text-muted text-center py-3 mb-0">No categories added yet.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var cat in categories)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <div>
+                                    <strong class="text-dark">@cat.Name</strong>
+                                    <br />
+                                    <small class="text-muted">@cat.Description</small>
+                                </div>
+                                <span class="badge bg-success rounded-pill">R @cat.Price</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Participant Enrolments -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Participant Enrolments</h5>
+                <span class="badge bg-light text-dark">Total: @enrolments.Count</span>
+            </div>
+            <div class="card-body p-0">
+                @if (!enrolments.Any())
+                {
+                    <div class="text-center py-5">
+                        <p class="text-muted mb-0">No participants have enrolled for this event yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Participant</th>
+                                    <th>Category</th>
+                                    <th>Date Enrolled</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var en in enrolments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@en.ParticipantName</div>
+                                            <small class="text-muted">@en.ParticipantEmail</small>
+                                        </td>
+                                        <td><span class="badge bg-secondary">@en.CategoryName</span></td>
+                                        <td>@en.EnrolmentDate.ToString("yyyy-MM-dd")</td>
+                                        <td><span class="badge bg-info text-dark">@en.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -18,6 +18,7 @@ builder.Services.AddHttpClient("RaceDayAPI", client =>
 // 4. Register custom API Services
 builder.Services.AddScoped<AuthApiService>();
 builder.Services.AddScoped<OrganiserApiService>();
+builder.Services.AddScoped<ParticipantApiService>();
 
 // 5. Configure Session State for authentication and role management
 builder.Services.AddDistributedMemoryCache();

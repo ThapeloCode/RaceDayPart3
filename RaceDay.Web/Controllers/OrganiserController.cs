@@ -24,8 +24,10 @@ namespace RaceDay.Web.Controllers
         {
             if (!IsOrganiser()) return RedirectToAction("Login", "Account");
 
-            var userId = GetCurrentUserId()!.Value;
-            var events = await _organiserService.GetOrganiserEventsAsync(userId);
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue) return RedirectToAction("Login", "Account");
+
+            var events = await _organiserService.GetOrganiserEventsAsync(userId.Value);
 
             var dashboard = new OrganiserDashboardDto
             {
@@ -52,8 +54,10 @@ namespace RaceDay.Web.Controllers
             if (!IsOrganiser()) return RedirectToAction("Login", "Account");
             if (!ModelState.IsValid) return View(model);
 
-            var userId = GetCurrentUserId()!.Value;
-            var success = await _organiserService.CreateEventAsync(model, userId);
+            var userId = GetCurrentUserId();
+            if (!userId.HasValue) return RedirectToAction("Login", "Account");
+
+            var success = await _organiserService.CreateEventAsync(model, userId.Value);
 
             if (success)
             {
@@ -74,6 +78,33 @@ namespace RaceDay.Web.Controllers
             await _organiserService.DeleteEventAsync(id);
             TempData["SuccessMessage"] = "Event deleted.";
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageEvent(int id)
+        {
+            if (!IsOrganiser()) return RedirectToAction("Login", "Account");
+
+            var categories = await _organiserService.GetEventCategoriesAsync(id);
+            var enrolments = await _organiserService.GetEventEnrolmentsAsync(id);
+
+            ViewBag.EventId = id;
+            ViewBag.Categories = categories;
+            ViewBag.Enrolments = enrolments;
+
+            return View(new CreateCategoryDto { EventId = id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddCategory(CreateCategoryDto model)
+        {
+            if (!IsOrganiser()) return RedirectToAction("Login", "Account");
+            if (!ModelState.IsValid) return RedirectToAction("ManageEvent", new { id = model.EventId });
+
+            await _organiserService.AddCategoryAsync(model);
+            TempData["SuccessMessage"] = "Category added successfully!";
+            return RedirectToAction("ManageEvent", new { id = model.EventId });
         }
     }
 }

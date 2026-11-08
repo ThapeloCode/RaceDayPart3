@@ -1,8 +1,65 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var userRole = Context.Session.GetString("UserRole");
+    var userName = Context.Session.GetString("UserName");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="p-5 mb-4 bg-light rounded-3 shadow-sm border mt-3">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold text-primary">Welcome to RaceDay 🏎️</h1>
+        <p class="col-md-8 fs-4 text-secondary">
+            Your premier South African platform for road running, walking, and cycling event management and participation.
+        </p>
+
+        @if (!string.IsNullOrEmpty(userName))
+        {
+            <div class="alert alert-info mt-3 d-inline-block">
+                Logged in as <strong>@userName</strong> (<span class="badge bg-dark">@userRole</span>)
+            </div>
+            <div class="mt-3">
+                @if (userRole == "Organiser")
+                {
+                    <a class="btn btn-warning btn-lg fw-semibold me-2" asp-controller="Organiser" asp-action="Index">Go to Organiser Dashboard</a>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-lg fw-semibold me-2" asp-controller="Participant" asp-action="MyEnrolments">View My Enrolments</a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="mt-4">
+                <a class="btn btn-primary btn-lg fw-semibold me-2" asp-controller="Account" asp-action="Login">Log In</a>
+                <a class="btn btn-outline-primary btn-lg fw-semibold" asp-controller="Account" asp-action="Register">Register Now</a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row text-center mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0 p-3">
+            <div class="card-body">
+                <h3 class="card-title text-warning fw-bold">For Organisers</h3>
+                <p class="card-text text-muted">Create events, define pricing categories, set distances, and track participant enrolments seamlessly.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0 p-3">
+            <div class="card-body">
+                <h3 class="card-title text-info fw-bold">For Participants</h3>
+                <p class="card-text text-muted">Browse upcoming races, sign up for running or cycling categories, and manage your personal results.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0 p-3">
+            <div class="card-body">
+                <h3 class="card-title text-success fw-bold">Live Results</h3>
+                <p class="card-text text-muted">View official finish times, rankings, and event statistics published instantly by event coordinators.</p>
+            </div>
+        </div>
+    </div>
 </div>

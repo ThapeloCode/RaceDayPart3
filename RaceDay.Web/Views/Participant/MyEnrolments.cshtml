@@ -1,0 +1,51 @@
+@model List<RaceDay.Web.DTOs.ParticipantEnrolmentDto>
+
+@{
+    ViewData["Title"] = "My Enrolments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark">My Event Enrolments</h2>
+    <a asp-action="BrowseEvents" class="btn btn-primary fw-semibold">+ Browse More Events</a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center py-5">
+        <p class="mb-2">You haven't enrolled in any events yet.</p>
+        <a asp-action="BrowseEvents" class="btn btn-outline-primary btn-sm">Explore Events</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive bg-white shadow-sm rounded">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Event Name</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var en in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@en.EventName</td>
+                        <td><span class="badge bg-secondary">@en.CategoryName</span></td>
+                        <td>@en.EventDate.ToString("yyyy-MM-dd")</td>
+                        <td>@en.Location</td>
+                        <td><span class="badge bg-success">@en.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
