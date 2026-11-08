@@ -1,0 +1,91 @@
+@model RaceDay.Web.DTOs.OrganiserDashboardDto
+
+@{
+    ViewData["Title"] = "Organiser Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark">Organiser Dashboard</h2>
+    <a asp-action="CreateEvent" class="btn btn-warning fw-semibold">+ Create New Event</a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2">Total Events Created</h6>
+                <h2 class="card-title fw-bold mb-0">@Model.TotalEvents</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2">Total Enrolments</h6>
+                <h2 class="card-title fw-bold mb-0">@Model.TotalEnrolments</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark shadow-sm">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2">Upcoming Events</h6>
+                <h2 class="card-title fw-bold mb-0">@Model.UpcomingEvents.Count</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="fw-bold mb-3">Your Events</h4>
+
+@if (!Model.AllEvents.Any())
+{
+    <div class="alert alert-info text-center py-4">
+        <p class="mb-2">You haven't created any events yet.</p>
+        <a asp-action="CreateEvent" class="btn btn-outline-primary btn-sm">Create First Event</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive bg-white shadow-sm rounded">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Event Name</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Distance</th>
+                    <th>Enrolments</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ev in Model.AllEvents)
+                {
+                    <tr>
+                        <td class="fw-bold">@ev.Name</td>
+                        <td><span class="badge bg-secondary">@ev.EventType</span></td>
+                        <td>@ev.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@ev.Location</td>
+                        <td>@ev.Distance km</td>
+                        <td><span class="badge bg-info text-dark">@ev.EnrolmentCount</span></td>
+                        <td>
+                            <form asp-action="DeleteEvent" asp-route-id="@ev.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this event?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
