@@ -1,0 +1,36 @@
+name: RaceDay CI Validation
+
+on:
+	push:
+		branches: [ "main", "master" ]
+	pull_request:
+		branches: [ "main", "master" ]
+
+jobs:
+	validate-docs:
+		runs-on: ubuntu-latest
+
+		steps:
+		- name: Checkout Repository
+			uses: actions/checkout@v4
+
+		- name: Verify Docs Folder and Required Files
+			run: |
+				echo "Checking if /docs folder exists..."
+				if [ -d "docs" ]; then
+					echo "/docs folder found successfully."
+				else
+					echo "Error: /docs folder missing!"
+					exit 1
+				fi
+
+				echo "Verifying contents of /docs folder..."
+				ls -la docs/
+
+				# Check for core Part 1 files
+				if [ "$(ls -A docs/)" ]; then
+					echo "Docs folder contains files. Validation passed!"
+				else
+					echo "Error: /docs folder is empty!"
+					exit 1
+				fi
