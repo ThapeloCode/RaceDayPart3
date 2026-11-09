@@ -21,14 +21,17 @@ namespace RaceDay.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
         {
-            return await _context.Events
+            var events = await _context.Events
                 .Include(e => e.Organiser)
                 .Include(e => e.Categories)
                 .Include(e => e.Enrolments)
+                .AsSplitQuery() // Eliminates Cartesian explosion warning & optimizes performance
                 .ToListAsync();
+
+            return Ok(events);
         }
 
-        // GET: api/events/{id}
+        // GET: api/events/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEvent(int id)
         {
@@ -36,13 +39,19 @@ namespace RaceDay.API.Controllers
                 .Include(e => e.Organiser)
                 .Include(e => e.Categories)
                 .Include(e => e.Enrolments)
+                .Include(e => e.Results)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(e => e.EventId == id);
 
-            if (eventItem == null) return NotFound();
-            return eventItem;
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(eventItem);
         }
 
-        // GET: api/events/organiser/{organiserId}
+        // GET: api/events/organiser/5
         [HttpGet("organiser/{organiserId}")]
         public async Task<ActionResult<IEnumerable<Event>>> GetOrganiserEvents(int organiserId)
         {
@@ -50,6 +59,7 @@ namespace RaceDay.API.Controllers
                 .Where(e => e.OrganiserId == organiserId)
                 .Include(e => e.Categories)
                 .Include(e => e.Enrolments)
+                .AsSplitQuery()
                 .ToListAsync();
 
             return Ok(events);
@@ -57,30 +67,25 @@ namespace RaceDay.API.Controllers
 
         // POST: api/events
         [HttpPost]
-        [Authorize(Roles = "Organiser")]
-        public async Task<ActionResult<Event>> CreateEvent([FromBody] Event eventModel)
+        [Authorize]
+        public async Task<ActionResult<Event>> CreateEvent([FromBody] Event eventItem)
         {
-            if (!ModelState.IsValid)
+            // Verify organiser exists
+            var organiser = await _context.Users.FindAsync(eventItem.OrganiserId);
+            if (organiser == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { message = "Invalid OrganiserId. User does not exist." });
             }
 
-            // Verify that the Organiser exists in the Users table
-            var organiserExists = await _context.Users.AnyAsync(u => u.UserId == eventModel.OrganiserId);
-            if (!organiserExists)
-            {
-                return BadRequest(new { message = "Invalid Organiser ID. User does not exist." });
-            }
-
-            _context.Events.Add(eventModel);
+            _context.Events.Add(eventItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetEvent), new { id = eventModel.EventId }, eventModel);
+            return CreatedAtAction(nameof(GetEvent), new { id = eventItem.EventId }, eventItem);
         }
 
-        // DELETE: api/events/{id}
+        // DELETE: api/events/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Organiser")]
+        [Authorize]
         public async Task<IActionResult> DeleteEvent(int id)
         {
             var eventItem = await _context.Events.FindAsync(id);
@@ -95,45 +100,22 @@ namespace RaceDay.API.Controllers
             return NoContent();
         }
 
-        // GET: api/events/{id}/categories
-        [HttpGet("{id}/categories")]
-        public async Task<ActionResult<IEnumerable<Category>>> GetEventCategories(int id)
-        {
-            var categories = await _context.Categories
-                .Where(c => c.EventId == id)
-                .ToListAsync();
-
-            return Ok(categories);
-        }
-
-        // POST: api/events/{id}/categories
+        // POST: api/events/5/categories
         [HttpPost("{id}/categories")]
-        [Authorize(Roles = "Organiser")]
+        [Authorize]
         public async Task<ActionResult<Category>> AddCategory(int id, [FromBody] Category category)
         {
-            var eventExists = await _context.Events.AnyAsync(e => e.EventId == id);
-            if (!eventExists) return NotFound(new { message = "Event not found." });
+            var eventItem = await _context.Events.FindAsync(id);
+            if (eventItem == null)
+            {
+                return NotFound(new { message = "Event not found." });
+            }
 
             category.EventId = id;
-
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
             return Ok(category);
-        }
-
-        // GET: api/events/{id}/enrolments
-        [HttpGet("{id}/enrolments")]
-        [Authorize]
-        public async Task<ActionResult<IEnumerable<Enrolment>>> GetEventEnrolments(int id)
-        {
-            var enrolments = await _context.Enrolments
-                .Where(e => e.EventId == id)
-                .Include(e => e.User)
-                .Include(e => e.Category)
-                .ToListAsync();
-
-            return Ok(enrolments);
         }
     }
 }

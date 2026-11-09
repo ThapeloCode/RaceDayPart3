@@ -2,6 +2,17 @@
 
 @{
     ViewData["Title"] = "Organiser Dashboard";
+
+    if (Model == null)
+    {
+        <div class="container mt-4">
+            <div class="alert alert-danger shadow-sm">
+                <h4>Unable to load dashboard</h4>
+                <p class="mb-0">The dashboard data could not be retrieved. Please try refreshing the page or logging in again.</p>
+            </div>
+        </div>
+        return;
+    }
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">

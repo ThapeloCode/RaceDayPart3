@@ -78,5 +78,16 @@ namespace RaceDay.Web.Controllers
             var results = await _participantService.GetParticipantResultsAsync(userId);
             return View(results);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            if (!IsParticipant()) return RedirectToAction("Login", "Account");
+
+            var userId = GetCurrentUserId()!.Value;
+
+            // You can fetch additional profile info here if your service supports it
+            return View();
+        }
     }
 }

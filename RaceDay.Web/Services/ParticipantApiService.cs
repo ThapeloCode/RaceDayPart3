@@ -1,83 +1,134 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Http;
 using RaceDay.Web.DTOs;
 
 namespace RaceDay.Web.Services
 {
     public class ParticipantApiService
     {
-        private readonly HttpClient _client;
+        private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ParticipantApiService(IHttpClientFactory clientFactory, IHttpContextAccessor httpContextAccessor)
+        public ParticipantApiService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
         {
-            _client = clientFactory.CreateClient("RaceDayAPI");
+            _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
+
+            // Fallback base address to prevent InvalidOperationException if not injected via DI
+            if (_httpClient.BaseAddress == null)
+            {
+                _httpClient.BaseAddress = new Uri("http://localhost:5289/");
+            }
         }
 
-        private void AttachBearerToken()
+        private void AttachToken()
         {
-            var token = _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("JWToken");
             if (!string.IsNullOrEmpty(token))
             {
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
         }
 
         public async Task<List<EventDto>> GetAllEventsAsync()
         {
-            var response = await _client.GetAsync("events");
-            if (response.IsSuccessStatusCode)
+            AttachToken();
+            try
             {
-                return await response.Content.ReadFromJsonAsync<List<EventDto>>() ?? new List<EventDto>();
+                var events = await _httpClient.GetFromJsonAsync<List<EventDto>>("api/events");
+                return events ?? new List<EventDto>();
             }
-            return new List<EventDto>();
+            catch (Exception)
+            {
+                return new List<EventDto>();
+            }
+        }
+
+        public async Task<EventDto?> GetEventByIdAsync(int id)
+        {
+            AttachToken();
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<EventDto>($"api/events/{id}");
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> CreateEventAsync(EventDto eventDto)
+        {
+            AttachToken();
+            var response = await _httpClient.PostAsJsonAsync("api/events", eventDto);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> DeleteEventAsync(int id)
+        {
+            AttachToken();
+            var response = await _httpClient.DeleteAsync($"api/events/{id}");
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<List<CategoryDto>> GetEventCategoriesAsync(int eventId)
         {
-            var response = await _client.GetAsync($"categories/event/{eventId}");
-            if (response.IsSuccessStatusCode)
+            AttachToken();
+            try
             {
-                return await response.Content.ReadFromJsonAsync<List<CategoryDto>>() ?? new List<CategoryDto>();
+                var categories = await _httpClient.GetFromJsonAsync<List<CategoryDto>>($"api/categories/event/{eventId}");
+                return categories ?? new List<CategoryDto>();
             }
-            return new List<CategoryDto>();
+            catch (Exception)
+            {
+                return new List<CategoryDto>();
+            }
         }
 
-        public async Task<bool> EnrolAsync(int userId, int categoryId)
+        public async Task<bool> EnrolAsync(int eventId, int categoryId, int userId = 0)
         {
-            AttachBearerToken();
-            var payload = new EnrolmentRequestDto
-            {
-                UserId = userId,
-                CategoryId = categoryId
-            };
+            AttachToken();
 
-            var response = await _client.PostAsJsonAsync("enrolments", payload);
+            if (userId <= 0)
+            {
+                var sessionUserId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+                if (sessionUserId.HasValue)
+                {
+                    userId = sessionUserId.Value;
+                }
+            }
+
+            var enrolmentPayload = new { EventId = eventId, CategoryId = categoryId, UserId = userId };
+            var response = await _httpClient.PostAsJsonAsync("api/enrolments", enrolmentPayload);
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<List<ParticipantEnrolmentDto>> GetParticipantEnrolmentsAsync(int userId)
+        public async Task<List<EventEnrolmentDto>> GetParticipantEnrolmentsAsync(int userId)
         {
-            AttachBearerToken();
-            var response = await _client.GetAsync($"enrolments/user/{userId}");
-            if (response.IsSuccessStatusCode)
+            AttachToken();
+            try
             {
-                return await response.Content.ReadFromJsonAsync<List<ParticipantEnrolmentDto>>() ?? new List<ParticipantEnrolmentDto>();
+                var enrolments = await _httpClient.GetFromJsonAsync<List<EventEnrolmentDto>>($"api/enrolments/user/{userId}");
+                return enrolments ?? new List<EventEnrolmentDto>();
             }
-            return new List<ParticipantEnrolmentDto>();
+            catch (Exception)
+            {
+                return new List<EventEnrolmentDto>();
+            }
         }
 
-        public async Task<List<ParticipantResultDto>> GetParticipantResultsAsync(int userId)
+        public async Task<List<object>> GetParticipantResultsAsync(int userId)
         {
-            AttachBearerToken();
-            var response = await _client.GetAsync($"results/user/{userId}");
-            if (response.IsSuccessStatusCode)
+            AttachToken();
+            try
             {
-                return await response.Content.ReadFromJsonAsync<List<ParticipantResultDto>>() ?? new List<ParticipantResultDto>();
+                var results = await _httpClient.GetFromJsonAsync<List<object>>($"api/results/user/{userId}");
+                return results ?? new List<object>();
             }
-            return new List<ParticipantResultDto>();
+            catch (Exception)
+            {
+                return new List<object>();
+            }
         }
     }
 }

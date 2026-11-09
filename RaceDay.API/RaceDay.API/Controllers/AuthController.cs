@@ -39,8 +39,7 @@ namespace RaceDay.API.Controllers
                 Role = dto.Role
             };
 
-            //_context.Users.Users.Add(user); 
-              _context.Users.Add(user);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "User registered successfully." });

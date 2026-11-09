@@ -1,74 +1,88 @@
 using Microsoft.AspNetCore.Mvc;
-using RaceDay.Web.DTOs;
 using RaceDay.Web.Services;
+using RaceDay.Web.DTOs;
 
 namespace RaceDay.Web.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly AuthApiService _authService;
+        private readonly AuthApiService _authApiService;
 
-        public AccountController(AuthApiService authService)
+        public AccountController(AuthApiService authApiService)
         {
-            _authService = authService;
+            _authApiService = authApiService;
         }
 
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            return View();
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDto model)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            var userSession = await _authService.LoginAsync(model);
-            if (userSession == null)
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError(string.Empty, "Invalid email or password.");
                 return View(model);
             }
 
-            // Save user details to Session
-            HttpContext.Session.SetInt32("UserId", userSession.UserId);
-            HttpContext.Session.SetString("UserName", userSession.FullName);
-            HttpContext.Session.SetString("UserRole", userSession.Role);
-            HttpContext.Session.SetString("AuthToken", userSession.Token);
+            var authResponse = await _authApiService.LoginAsync(model);
 
-            // Redirect based on role
-            if (userSession.Role.Equals("Organiser", StringComparison.OrdinalIgnoreCase))
+            if (authResponse != null && !string.IsNullOrEmpty(authResponse.Token))
             {
-                return RedirectToAction("Index", "Organiser");
+                // Store authentication details and token in Session
+                HttpContext.Session.SetString("JWToken", authResponse.Token);
+                HttpContext.Session.SetInt32("UserId", authResponse.UserId);
+                HttpContext.Session.SetString("UserRole", authResponse.Role ?? "Participant");
+                HttpContext.Session.SetString("Username", model.Email);
+
+                // Redirect based on role
+                if (authResponse.Role?.Equals("Organiser", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return RedirectToAction("Index", "Organiser");
+                }
+
+                return RedirectToAction("Index", "Participant");
             }
 
-            return RedirectToAction("Index", "Home");
+            ModelState.AddModelError(string.Empty, "Invalid login attempt. Please check your credentials and try again.");
+            return View(model);
         }
 
         [HttpGet]
-        public IActionResult Register() => View();
+        public IActionResult Register()
+        {
+            return View();
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
-            var success = await _authService.RegisterAsync(model);
+            var success = await _authApiService.RegisterAsync(model);
             if (success)
             {
                 TempData["SuccessMessage"] = "Registration successful! Please log in.";
-                return RedirectToAction("Login");
+                return RedirectToAction(nameof(Login));
             }
 
-            ModelState.AddModelError(string.Empty, "Registration failed. Email may already be in use.");
+            ModelState.AddModelError(string.Empty, "Registration failed. Email might already be in use.");
             return View(model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

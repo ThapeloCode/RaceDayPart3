@@ -1,110 +1,105 @@
-using Microsoft.AspNetCore.Mvc;
-using RaceDay.Web.DTOs;
+﻿using Microsoft.AspNetCore.Mvc;
 using RaceDay.Web.Services;
 
 namespace RaceDay.Web.Controllers
 {
     public class OrganiserController : Controller
     {
-        private readonly OrganiserApiService _organiserService;
+        private readonly ParticipantApiService _participantService;
 
-        public OrganiserController(OrganiserApiService organiserService)
+        public OrganiserController(ParticipantApiService participantService)
         {
-            _organiserService = organiserService;
+            _participantService = participantService;
         }
 
         private int? GetCurrentUserId() => HttpContext.Session.GetInt32("UserId");
         private string? GetUserRole() => HttpContext.Session.GetString("UserRole");
-
-        private bool IsOrganiser() =>
-            GetUserRole()?.Equals("Organiser", StringComparison.OrdinalIgnoreCase) == true;
+        private bool IsOrganiser() => GetUserRole()?.Equals("Organiser", StringComparison.OrdinalIgnoreCase) == true;
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             if (!IsOrganiser()) return RedirectToAction("Login", "Account");
 
-            var userId = GetCurrentUserId();
-            if (!userId.HasValue) return RedirectToAction("Login", "Account");
+            var userIdVal = GetCurrentUserId();
+            if (userIdVal == null) return RedirectToAction("Login", "Account");
+            var organiserId = userIdVal.Value;
 
-            var events = await _organiserService.GetOrganiserEventsAsync(userId.Value);
+            // Fetch all events and filter for the current organiser
+            var allEvents = await _participantService.GetAllEventsAsync();
+            var organiserEvents = allEvents.Where(e => e.OrganiserId == organiserId).ToList();
 
-            var dashboard = new OrganiserDashboardDto
+            // Populate the dashboard DTO matching your Index.cshtml model
+            var dashboardDto = new RaceDay.Web.DTOs.OrganiserDashboardDto
             {
-                TotalEvents = events.Count,
-                TotalEnrolments = events.Sum(e => e.EnrolmentCount),
-                UpcomingEvents = events.Where(e => e.Date >= DateTime.Now).OrderBy(e => e.Date).ToList(),
-                AllEvents = events
+                TotalEvents = organiserEvents.Count,
+                TotalEnrolments = organiserEvents.Sum(e => e.EnrolmentCount),
+                UpcomingEvents = organiserEvents
+                    .Where(e => e.Date > DateTime.Now)
+                    .ToList(),
+                AllEvents = organiserEvents
             };
 
-            return View(dashboard);
+            return View(dashboardDto);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Events()
+        {
+            if (!IsOrganiser()) return RedirectToAction("Login", "Account");
+
+            var userIdVal = GetCurrentUserId();
+            if (userIdVal == null) return RedirectToAction("Login", "Account");
+            var organiserId = userIdVal.Value;
+
+            // Fetch events created by this specific organiser from your API
+            var events = await _participantService.GetAllEventsAsync();
+            var organiserEvents = events.Where(e => e.OrganiserId == organiserId).ToList();
+
+            return View(organiserEvents);
         }
 
         [HttpGet]
         public IActionResult CreateEvent()
         {
             if (!IsOrganiser()) return RedirectToAction("Login", "Account");
-            return View(new CreateEventDto());
+            return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateEvent(CreateEventDto model)
+        public async Task<IActionResult> CreateEvent(RaceDay.Web.DTOs.CreateEventDto model)
         {
             if (!IsOrganiser()) return RedirectToAction("Login", "Account");
-            if (!ModelState.IsValid) return View(model);
 
-            var userId = GetCurrentUserId();
-            if (!userId.HasValue) return RedirectToAction("Login", "Account");
+            var organiserIdVal = GetCurrentUserId();
+            if (organiserIdVal == null) return RedirectToAction("Login", "Account");
 
-            var success = await _organiserService.CreateEventAsync(model, userId.Value);
-
-            if (success)
+            if (!ModelState.IsValid)
             {
-                TempData["SuccessMessage"] = "Event created successfully!";
-                return RedirectToAction("Index");
+                return View(model);
             }
 
-            ModelState.AddModelError(string.Empty, "Failed to create event. Please try again.");
+            // Map CreateEventDto fields to the EventDto expected by your API service client
+            var eventDtoToSubmit = new RaceDay.Web.DTOs.EventDto
+            {
+                Name = model.Name,
+                Description = model.Description,
+                Date = model.Date,
+                Location = model.Location,
+                Distance = model.Distance,
+                EventType = model.EventType,
+                OrganiserId = organiserIdVal.Value
+            };
+
+            var success = await _participantService.CreateEventAsync(eventDtoToSubmit);
+            if (success)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            ModelState.AddModelError(string.Empty, "Failed to create the event via the API. Please try again.");
             return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteEvent(int id)
-        {
-            if (!IsOrganiser()) return RedirectToAction("Login", "Account");
-
-            await _organiserService.DeleteEventAsync(id);
-            TempData["SuccessMessage"] = "Event deleted.";
-            return RedirectToAction("Index");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ManageEvent(int id)
-        {
-            if (!IsOrganiser()) return RedirectToAction("Login", "Account");
-
-            var categories = await _organiserService.GetEventCategoriesAsync(id);
-            var enrolments = await _organiserService.GetEventEnrolmentsAsync(id);
-
-            ViewBag.EventId = id;
-            ViewBag.Categories = categories;
-            ViewBag.Enrolments = enrolments;
-
-            return View(new CreateCategoryDto { EventId = id });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddCategory(CreateCategoryDto model)
-        {
-            if (!IsOrganiser()) return RedirectToAction("Login", "Account");
-            if (!ModelState.IsValid) return RedirectToAction("ManageEvent", new { id = model.EventId });
-
-            await _organiserService.AddCategoryAsync(model);
-            TempData["SuccessMessage"] = "Category added successfully!";
-            return RedirectToAction("ManageEvent", new { id = model.EventId });
         }
     }
 }
