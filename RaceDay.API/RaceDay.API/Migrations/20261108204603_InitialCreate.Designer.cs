@@ -26,170 +26,229 @@ namespace RaceDay.API.Migrations
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("RaceDay.API.Models.Category", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("CategoryId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
 
-                    b.Property<string>("CategoryName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("CategoryName")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
+                b.Property<int>("EventId")
+                    .HasColumnType("int");
 
-                    b.HasKey("CategoryId");
+                b.HasKey("CategoryId");
 
-                    b.ToTable("Categories");
-                });
+                b.HasIndex("EventId");
+
+                b.ToTable("Categories");
+            });
 
             modelBuilder.Entity("RaceDay.API.Models.Enrolment", b =>
-                {
-                    b.Property<int>("EnrolmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("EnrolmentId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EnrolmentId"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EnrolmentId"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                b.Property<int>("CategoryId")
+                    .HasColumnType("int");
 
-                    b.Property<DateTime>("EnrolmentDate")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime>("EnrolmentDate")
+                    .HasColumnType("datetime2");
 
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
+                b.Property<int>("EventId")
+                    .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                b.Property<int>("UserId")
+                    .HasColumnType("int");
 
-                    b.HasKey("EnrolmentId");
+                b.HasKey("EnrolmentId");
 
-                    b.ToTable("Enrolments");
-                });
+                b.HasIndex("CategoryId");
+
+                b.HasIndex("EventId");
+
+                b.HasIndex("UserId");
+
+                b.ToTable("Enrolments");
+            });
 
             modelBuilder.Entity("RaceDay.API.Models.Event", b =>
-                {
-                    b.Property<int>("EventId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("EventId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
 
-                    b.Property<DateTime>("EventDate")
-                        .HasColumnType("datetime2");
+                b.Property<DateTime>("EventDate")
+                    .HasColumnType("datetime2");
 
-                    b.Property<string>("EventName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("EventName")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("EventType")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Location")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("OrganiserId")
-                        .HasColumnType("int");
+                b.Property<int>("OrganiserId")
+                    .HasColumnType("int");
 
-                    b.HasKey("EventId");
+                b.HasKey("EventId");
 
-                    b.ToTable("Events");
-                });
+                b.HasIndex("OrganiserId");
+
+                b.ToTable("Events");
+            });
 
             modelBuilder.Entity("RaceDay.API.Models.Result", b =>
-                {
-                    b.Property<int>("ResultId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("ResultId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ResultId"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ResultId"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
+                b.Property<int>("CategoryId")
+                    .HasColumnType("int");
 
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
+                b.Property<int>("EventId")
+                    .HasColumnType("int");
 
-                    b.Property<TimeSpan>("FinishTime")
-                        .HasColumnType("time");
+                b.Property<TimeSpan>("FinishTime")
+                    .HasColumnType("time");
 
-                    b.Property<int>("Position")
-                        .HasColumnType("int");
+                b.Property<int>("Position")
+                    .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                b.Property<int>("UserId")
+                    .HasColumnType("int");
 
-                    b.HasKey("ResultId");
+                b.HasKey("ResultId");
 
-                    b.HasIndex("CategoryId");
+                b.HasIndex("CategoryId");
 
-                    b.HasIndex("EventId");
+                b.HasIndex("EventId");
 
-                    b.HasIndex("UserId");
+                b.HasIndex("UserId");
 
-                    b.ToTable("Results");
-                });
+                b.ToTable("Results");
+            });
 
             modelBuilder.Entity("RaceDay.API.Models.User", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+            {
+                b.Property<int>("UserId")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
+                SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("PasswordHash")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Role")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                b.Property<string>("Username")
+                    .IsRequired()
+                    .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("UserId");
+                b.HasKey("UserId");
 
-                    b.ToTable("Users");
-                });
+                b.ToTable("Users");
+            });
+
+            modelBuilder.Entity("RaceDay.API.Models.Category", b =>
+            {
+                b.HasOne("RaceDay.API.Models.Event", "Event")
+                    .WithMany("Categories")
+                    .HasForeignKey("EventId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Event");
+            });
+
+            modelBuilder.Entity("RaceDay.API.Models.Enrolment", b =>
+            {
+                b.HasOne("RaceDay.API.Models.Category", "Category")
+                    .WithMany()
+                    .HasForeignKey("CategoryId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("RaceDay.API.Models.Event", "Event")
+                    .WithMany("Enrolments")
+                    .HasForeignKey("EventId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("RaceDay.API.Models.User", "User")
+                    .WithMany()
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.Navigation("Category");
+
+                b.Navigation("Event");
+
+                b.Navigation("User");
+            });
+
+            modelBuilder.Entity("RaceDay.API.Models.Event", b =>
+            {
+                b.HasOne("RaceDay.API.Models.User", "Organiser")
+                    .WithMany()
+                    .HasForeignKey("OrganiserId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.Navigation("Organiser");
+            });
 
             modelBuilder.Entity("RaceDay.API.Models.Result", b =>
-                {
-                    b.HasOne("RaceDay.API.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("RaceDay.API.Models.Category", "Category")
+                    .WithMany()
+                    .HasForeignKey("CategoryId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.HasOne("RaceDay.API.Models.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("RaceDay.API.Models.Event", "Event")
+                    .WithMany("Results")
+                    .HasForeignKey("EventId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
-                    b.HasOne("RaceDay.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.HasOne("RaceDay.API.Models.User", "User")
+                    .WithMany()
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
 
-                    b.Navigation("Category");
+                b.Navigation("Category");
 
-                    b.Navigation("Event");
+                b.Navigation("Event");
 
-                    b.Navigation("User");
-                });
+                b.Navigation("User");
+            });
 #pragma warning restore 612, 618
         }
     }

@@ -63,6 +63,15 @@ namespace RaceDay.API.Controllers
         [Authorize(Roles = "Organiser")]
         public async Task<ActionResult<Result>> CreateResult([FromBody] Result result)
         {
+            var eventExists = await _context.Events.AnyAsync(e => e.EventId == result.EventId);
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == result.UserId);
+            var categoryExists = await _context.Categories.AnyAsync(c => c.CategoryId == result.CategoryId);
+
+            if (!eventExists || !userExists || !categoryExists)
+            {
+                return BadRequest(new { message = "Invalid EventId, UserId, or CategoryId provided." });
+            }
+
             _context.Results.Add(result);
             await _context.SaveChangesAsync();
 

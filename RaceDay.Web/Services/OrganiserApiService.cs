@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using RaceDay.Web.DTOs;
 
 namespace RaceDay.Web.Services
@@ -10,15 +8,27 @@ namespace RaceDay.Web.Services
     public class OrganiserApiService
     {
         private readonly HttpClient _client;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public OrganiserApiService(IHttpClientFactory clientFactory)
+        public OrganiserApiService(IHttpClientFactory clientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _client = clientFactory.CreateClient("RaceDayAPI");
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private void AttachBearerToken()
+        {
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
         }
 
         public async Task<List<EventDto>> GetOrganiserEventsAsync(int organiserId)
         {
-            var response = await _client.GetAsync($"api/events/organiser/{organiserId}");
+            AttachBearerToken();
+            var response = await _client.GetAsync($"events/organiser/{organiserId}");
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<List<EventDto>>() ?? new List<EventDto>();
@@ -26,40 +36,35 @@ namespace RaceDay.Web.Services
             return new List<EventDto>();
         }
 
-        public async Task<bool> CreateEventAsync(CreateEventDto dto, int organiserId)
+        public async Task<bool> CreateEventAsync(CreateEventDto createDto, int organiserId)
         {
-            // Mapped payload matching backend EF Core database schema
+            AttachBearerToken();
             var payload = new
             {
-                EventName = dto.Name,
-                EventDate = dto.Date,
-                EventType = dto.EventType,
-                Location = dto.Location,
+                EventName = createDto.Name,
+                Description = createDto.Description,
+                EventType = createDto.EventType,
+                Location = createDto.Location,
+                Distance = createDto.Distance,
+                EventDate = createDto.Date,
                 OrganiserId = organiserId
             };
 
-            var response = await _client.PostAsJsonAsync("api/events", payload);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                // Logs the status code and API error details to your terminal output
-                var errorBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[API ERROR] Status: {response.StatusCode} | Details: {errorBody}");
-                return false;
-            }
-
-            return true;
+            var response = await _client.PostAsJsonAsync("events", payload);
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> DeleteEventAsync(int eventId)
         {
-            var response = await _client.DeleteAsync($"api/events/{eventId}");
+            AttachBearerToken();
+            var response = await _client.DeleteAsync($"events/{eventId}");
             return response.IsSuccessStatusCode;
         }
 
         public async Task<List<CategoryDto>> GetEventCategoriesAsync(int eventId)
         {
-            var response = await _client.GetAsync($"api/events/{eventId}/categories");
+            AttachBearerToken();
+            var response = await _client.GetAsync($"categories/event/{eventId}");
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<List<CategoryDto>>() ?? new List<CategoryDto>();
@@ -67,15 +72,17 @@ namespace RaceDay.Web.Services
             return new List<CategoryDto>();
         }
 
-        public async Task<bool> AddCategoryAsync(CreateCategoryDto dto)
+        public async Task<bool> AddCategoryAsync(CreateCategoryDto categoryDto)
         {
-            var response = await _client.PostAsJsonAsync($"api/events/{dto.EventId}/categories", dto);
+            AttachBearerToken();
+            var response = await _client.PostAsJsonAsync($"events/{categoryDto.EventId}/categories", categoryDto);
             return response.IsSuccessStatusCode;
         }
 
         public async Task<List<EventEnrolmentDto>> GetEventEnrolmentsAsync(int eventId)
         {
-            var response = await _client.GetAsync($"api/events/{eventId}/enrolments");
+            AttachBearerToken();
+            var response = await _client.GetAsync($"enrolments/event/{eventId}");
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<List<EventEnrolmentDto>>() ?? new List<EventEnrolmentDto>();

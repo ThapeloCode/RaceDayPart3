@@ -5,10 +5,10 @@
 }
 
 <div class="row justify-content-center mt-5">
-    <div class="col-md-5">
+    <div class="col-md-6">
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
-                <h3 class="card-title text-center text-primary mb-4 fw-bold">Create an Account</h3>
+                <h3 class="card-title text-center text-primary mb-4 fw-bold">Create a RaceDay Account</h3>
 
                 <form asp-action="Register" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -31,22 +31,26 @@
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label asp-for="Role" class="form-label">Account Type</label>
                         <select asp-for="Role" class="form-select">
-                            <option value="Participant">Participant</option>
-                            <option value="Organiser">Organiser</option>
+                            <option value="Participant">Participant (Join Races)</option>
+                            <option value="Organiser">Organiser (Host & Manage Races)</option>
                         </select>
                         <span asp-validation-for="Role" class="text-danger"></span>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100 py-2">Register</button>
+                    <button type="submit" class="btn btn-primary w-100 py-2">Create Account</button>
                 </form>
 
                 <div class="text-center mt-3">
-                    <small>Already registered? <a asp-action="Login">Log in here</a></small>
+                    <small>Already have an account? <a asp-action="Login">Log in here</a></small>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

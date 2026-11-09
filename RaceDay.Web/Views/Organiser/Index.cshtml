@@ -18,26 +18,26 @@
 }
 
 <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card bg-primary text-white shadow-sm">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-primary text-white shadow-sm h-100">
             <div class="card-body">
-                <h6 class="card-subtitle mb-2">Total Events Created</h6>
+                <h6 class="card-subtitle mb-2 opacity-75">Total Events Created</h6>
                 <h2 class="card-title fw-bold mb-0">@Model.TotalEvents</h2>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card bg-success text-white shadow-sm">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-success text-white shadow-sm h-100">
             <div class="card-body">
-                <h6 class="card-subtitle mb-2">Total Enrolments</h6>
+                <h6 class="card-subtitle mb-2 opacity-75">Total Enrolments</h6>
                 <h2 class="card-title fw-bold mb-0">@Model.TotalEnrolments</h2>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card bg-warning text-dark shadow-sm">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-warning text-dark shadow-sm h-100">
             <div class="card-body">
-                <h6 class="card-subtitle mb-2">Upcoming Events</h6>
+                <h6 class="card-subtitle mb-2 opacity-75">Upcoming Events</h6>
                 <h2 class="card-title fw-bold mb-0">@Model.UpcomingEvents.Count</h2>
             </div>
         </div>
@@ -48,8 +48,8 @@
 
 @if (!Model.AllEvents.Any())
 {
-    <div class="alert alert-info text-center py-4">
-        <p class="mb-2">You haven't created any events yet.</p>
+    <div class="alert alert-info text-center py-4 shadow-sm">
+        <p class="mb-2 fs-5">You haven't created any events yet.</p>
         <a asp-action="CreateEvent" class="btn btn-outline-primary btn-sm">Create First Event</a>
     </div>
 }
@@ -61,25 +61,26 @@ else
                 <tr>
                     <th>Event Name</th>
                     <th>Type</th>
-                    <th>Date</th>
+                    <th>Date &amp; Time</th>
                     <th>Location</th>
                     <th>Distance</th>
                     <th>Enrolments</th>
-                    <th>Actions</th>
+                    <th class="text-end pe-3">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var ev in Model.AllEvents)
                 {
                     <tr>
-                        <td class="fw-bold">@ev.Name</td>
+                        <td class="fw-bold text-primary">@ev.Name</td>
                         <td><span class="badge bg-secondary">@ev.EventType</span></td>
                         <td>@ev.Date.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@ev.Location</td>
                         <td>@ev.Distance km</td>
                         <td><span class="badge bg-info text-dark">@ev.EnrolmentCount</span></td>
-                        <td>
-                            <form asp-action="DeleteEvent" asp-route-id="@ev.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this event?');">
+                        <td class="text-end text-nowrap pe-3">
+                            <a asp-action="ManageEvent" asp-route-id="@ev.Id" class="btn btn-outline-primary btn-sm me-1">Manage</a>
+                            <form asp-action="DeleteEvent" asp-route-id="@ev.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this event?');">
                                 <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
                             </form>
                         </td>

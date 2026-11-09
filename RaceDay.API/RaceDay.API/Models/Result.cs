@@ -10,15 +10,15 @@ namespace RaceDay.API.Models
 
         public int EventId { get; set; }
         [ForeignKey("EventId")]
-        public Event Event { get; set; }
+        public Event? Event { get; set; }
 
         public int UserId { get; set; }
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public User? User { get; set; }
 
         public int CategoryId { get; set; }
         [ForeignKey("CategoryId")]
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
 
         public TimeSpan FinishTime { get; set; }
         public int Position { get; set; }

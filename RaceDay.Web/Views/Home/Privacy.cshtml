@@ -1,6 +1,45 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container py-4">
+    <h1 class="fw-bold text-primary mb-3">@ViewData["Title"]</h1>
+    <p class="text-muted">Last updated: November 2026</p>
+
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body p-4 p-md-5">
+            <h4 class="fw-bold text-dark">1. Information We Collect</h4>
+            <p>
+                To provide event registration, categorization, and timing services across South Africa, RaceDay collects personal data provided directly by users during registration and enrolment:
+            </p>
+            <ul>
+                <li><strong>Account Credentials:</strong> Full name, email address, and encrypted password credentials.</li>
+                <li><strong>Participant Data:</strong> Age details (for age-graded race category validation) and race completion statistics (finish times, overall rankings, and event positions).</li>
+                <li><strong>Organiser & Event Information:</strong> Event parameters, venue locations, category pricing, and contact details.</li>
+            </ul>
+
+            <h4 class="fw-bold text-dark mt-4">2. How We Use Your Information</h4>
+            <p>Your information is used strictly to facilitate race events on our platform:</p>
+            <ul>
+                <li>Managing race registrations, bib assignments, and entry fee processing.</li>
+                <li>Publishing official race leaderboard rankings and result timing metrics.</li>
+                <li>Authenticating user sessions and granting role-based access (Participants vs. Organisers).</li>
+            </ul>
+
+            <h4 class="fw-bold text-dark mt-4">3. Data Sharing & Disclosure</h4>
+            <p>
+                RaceDay does not sell or rent personal information to third parties. Participant names and assigned category entries are shared only with the respective event organisers for logistical management and official timing publication.
+            </p>
+
+            <h4 class="fw-bold text-dark mt-4">4. Protection of Personal Information Act (POPIA)</h4>
+            <p>
+                In compliance with South Africa's Protection of Personal Information Act (POPIA), you maintain the right to access, update, or request the deletion of your personal account information at any time. Session authentication tokens are encrypted and handled securely.
+            </p>
+
+            <h4 class="fw-bold text-dark mt-4">5. Contact Us</h4>
+            <p class="mb-0">
+                If you have questions regarding this Privacy Policy or your personal data handling within the RaceDay ecosystem, please contact our support team at <a href="mailto:privacy@raceday.co.za" class="text-decoration-none">privacy@raceday.co.za</a>.
+            </p>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,33 @@
 @RaceDay.Tests_HostAddress = http://localhost:5148
 
-GET {{RaceDay.Tests_HostAddress}}/weatherforecast/
+### 1. Test API Health / Get Events (Public)
+GET {{RaceDay.Tests_HostAddress}}/api/events
 Accept: application/json
 
-###
+### 2. Register Test User
+POST {{RaceDay.Tests_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "integrationtester",
+  "email": "tester@raceday.com",
+  "password": "SecurePassword123!",
+  "role": "Organiser"
+}
+
+### 3. Login to Retrieve Token
+# @name testLogin
+POST {{RaceDay.Tests_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "tester@raceday.com",
+  "password": "SecurePassword123!"
+}
+
+### 4. Use Token for Protected Endpoint
+@token = {{testLogin.response.body.token}}
+
+GET {{RaceDay.Tests_HostAddress}}/api/enrolments
+Authorization: Bearer {{token}}
+Accept: application/json
